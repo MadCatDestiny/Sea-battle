@@ -62,14 +62,15 @@ void MainWindow::newuser()
             switch (this->SClients.size()) {
             case 1 : {
                 pls[0] = new Player(clientSocket);
-                pls[0]->set_first_step(1);
-                pls[0]->socket()->write("1");
+                //pls[0]->set_first_step(1);
+                //pls[0]->socket()->write("1");
                 pls[0]->socket()->flush();
             }break;
             case 2  : {
                 pls[1] = new Player(clientSocket);
-                pls[1]->set_first_step(0);
-                pls[1]->socket()->write("2");
+                //pls[1]->set_first_step(0);
+                //pls[1]->socket()->write("2");
+                pls[1]->socket()->waitForReadyRead(100);
                 pls[1]->socket()->flush();
                 send_status("all connected");
             }break;
@@ -80,14 +81,17 @@ void MainWindow::newuser()
 void MainWindow::show_map(QString msg,int descr)
 {
 
-   ui->textEdit->append("Client-" + QString::number(descr) + ": ");
-   for (int i = 0; i < 10; i++)
-   {
-       QString mes;
-       for (int j = 0; j < 20;j++)
-            mes.push_back(msg[i*10 + j]+ " ");
-       ui->textEdit->append(mes);
-   }
+    QStringList list = msg.split(' ');
+        QString mes;
+        for (int i = 0; i < 10; ++i)
+        {
+            for (int j = 0; j < 10; ++j)
+            {
+                mes += list[j*10 + i] + " ";
+            }
+            mes += "\n";
+        }
+    ui->textEdit->append("Player-" + QString::number(descr) + ": " + "\n" + mes);
 
 }
 
@@ -121,12 +125,16 @@ void MainWindow::parse_msg(QString msg,int descr)
     2) Координаты обстрела
     */
     size_t id = identify_player(descr);
+
     if (!game_started){ // Поле после расстановки кораблей
        show_map(msg,descr);
        pls[id]->set_map(convert_str_to_matrix(msg));
+       bool isFirst = !pls[!id]->isReady();
+       pls[id]->set_first_step(isFirst);
        pls[id]->set_ready(1);
+       ui->textEdit->append("Player "+ QString::number(pls[id]->descriptor()) + " is first - " + QString::number(isFirst));
 
-       if(pls[!id]->isReady())
+       if(!isFirst)
        {
            game_started = true;
            send_status("all ready");
@@ -140,7 +148,10 @@ void MainWindow::parse_msg(QString msg,int descr)
         bool second_map_is_empty = pls[!id]->isEmpty();
         if (!first_map_is_empty && !second_map_is_empty) // У обоих есть живые корабли
         {
-            pls[id]->socket()->write(QString::number(res).toStdString().c_str());
+            if(pls[!id]->isDied(point.x(),point.y()))
+                 pls[id]->socket()->write("KILL");
+            else
+                pls[id]->socket()->write(QString::number(res).toStdString().c_str());
             pls[!id]->socket()->write((QString::number(point.x()) + "," + QString::number(point.y())).toStdString().c_str());
             QString mes = "Client-" + QString::number(descr) + ": Shoot in " + msg + " and res is "+ QString::number(res);
             ui->textEdit->append(mes);
