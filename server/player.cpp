@@ -60,6 +60,32 @@ bool Player::isEmpty() const
     return true;
 }
 
+bool Player::isDied(int x, int y) const
+{
+    bool died = true;
+    if (y+1 < 10)
+    {
+        if (this->map[x][y+1] == 1)
+            died = false;
+    }
+    if (y-1 > 0)
+    {
+        if (this->map[x][y-1] == 1)
+            died = false;
+    }
+    if (x+1 < 10)
+    {
+        if (this->map[x+1][y] == 1 )
+            died = false;
+    }
+    if (x-1 > 0)
+    {
+        if (this->map[x-1][y] == 1)
+            died = false;
+    }
+    return died;
+}
+
 int Player::descriptor() const
 {
     return sock->socketDescriptor();
@@ -73,4 +99,9 @@ QTcpSocket *Player::socket()
 void Player::set_first_step(bool isFirst)
 {
     this->first_step = isFirst;
+    if (isFirst)
+        sock->write("1");
+    else
+        sock->write("2");
+
 }
