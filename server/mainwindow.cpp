@@ -149,7 +149,7 @@ void MainWindow::parse_msg(QString msg,int descr)
         if (!first_map_is_empty && !second_map_is_empty) // У обоих есть живые корабли
         {
             QVector<QPoint> ship;
-            if(pls[!id]->isDied(point.x(),point.y(),point.x(),point.y(),ship))
+            if(pls[!id]->isDied(point.x(),point.y(),point.x(),point.y(),ship) && res)
             {
                 QString points;
                 for (int i =0; i < ship.size(); i++)
