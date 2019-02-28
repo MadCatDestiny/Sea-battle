@@ -27,7 +27,7 @@ public:
     bool isFirst()const;
     bool isReady()const;
     bool isEmpty()const;
-    bool isDied(int,int)const;
+    bool isDied(int,int,int,int, QVector<QPoint>&)const;
     int descriptor()const;
     QTcpSocket * socket();
 };

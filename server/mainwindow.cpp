@@ -148,10 +148,17 @@ void MainWindow::parse_msg(QString msg,int descr)
         bool second_map_is_empty = pls[!id]->isEmpty();
         if (!first_map_is_empty && !second_map_is_empty) // У обоих есть живые корабли
         {
-            if(pls[!id]->isDied(point.x(),point.y()))
-                 pls[id]->socket()->write("KILL");
+            QVector<QPoint> ship;
+            if(pls[!id]->isDied(point.x(),point.y(),point.x(),point.y(),ship))
+            {
+                QString points;
+                for (int i =0; i < ship.size(); i++)
+                    points+=QString::number(ship[i].x()) +","+ QString::number(ship[i].y()) + " ";
+                pls[id]->socket()->write(QString("KILL " + points).toStdString().c_str());
+            }
             else
                 pls[id]->socket()->write(QString::number(res).toStdString().c_str());
+
             pls[!id]->socket()->write((QString::number(point.x()) + "," + QString::number(point.y())).toStdString().c_str());
             QString mes = "Client-" + QString::number(descr) + ": Shoot in " + msg + " and res is "+ QString::number(res);
             ui->textEdit->append(mes);
